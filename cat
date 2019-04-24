@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+ <html>
+  <body> 
+  <?php
+define("MAX_VERTICES", 40);
+ 
+$NUM_VERTICES; // число вершин в графе
+define("INFINITY", 10000); // условное число, обозначающее бесконечность
+ 
+$f[$MAX_VERTICES][$MAX_VERTICES]; 
+// f[i][j] - поток, текущий от вершины i к j
+$c[$MAX_VERTICES][$MAX_VERTICES]; 
+// c[i][j] - максимальная величина потока, способная течь по ребру (i,j)
+ 
+// набор вспомогательных переменных, используемых функцией FindPath - обхода в ширину
+$Flow[$MAX_VERTICES];
+// Flow - значение потока через данную вершину на данном шаге поиска
+$Link[$MAX_VERTICES]; 
+// Link[i] хранит номер предыдущей вешины на пути i -> исток
+$Queue[$MAX_VERTICES]; // очередь
+$QP, $QC; 
+// QP - указатель начала очереди и QC - число эл-тов в очереди
+ // поиск пути, по которому возможно пустить поток алгоритмом обхода графа в ширину
+// функция ищет путь из истока в сток, по которому еще можно пустить поток,
+// считая вместимость ребера (i,j) равной c[i][j] - f[i][j]
+ function FindPath($source, $target) // source - исток, target - сток
+{
+        $QP = 0; $QC = 1; $Queue[0] = $source;
+        $Link[$target] = -1;
+        $i;
+        $CurVertex;
+        memset($Flow, 0, sizeof(Integer)*$NUM_VERTICES);
+ 
+        $Flow[$source] = INFINITY;
+        while ($Link[$target] == -1 && $QP < $QC)
+        {
+                $CurVertex = $Queue[$QP];
+                for ($i=0; $i<$NUM_VERTICES; $i++)
+                        if (($c[$CurVertex][$i] - $f[$CurVertex][$i])>0 && $Flow[$i] == 0)
+                        {
+                                $Queue[$QC] = $i;
+                                $QC++;
+                                $Link[$i] = $CurVertex;
+                                if ($c[$CurVertex][$i]-$f[$CurVertex][$i] < $Flow[$CurVertex])
+                                        $Flow[$i] = $c[$CurVertex][$i];
+                                else
+                                        $Flow[$i] = $Flow[$CurVertex];
+                        }
+                        $QP++; 
+                } 
+                if ($Link[$target] == -1) return 0;
+                $CurVertex = $target;
+                while ($CurVertex != $source)
+                {
+                        $f[$Link[$CurVertex]][$CurVertex] +=$Flow[$target];
+                        $CurVertex = $Link[$CurVertex];
+                }
+                return $Flow[$target];
+} 
+function memset(&$Flow, $c, $num)
+{
+    $Flow = str_repeat($c, $num);
+} 
+// основная функция поиска максимального потока
+function MaxFlow($source,$target) // source - исток, target - сток
+{
+        memset($f, 0, sizeof(Integer)*$MAX_VERTICES*$MAX_VERTICES);
+        $MaxFlow = 0;
+        $AddFlow;
+        do
+        {
+                $AddFlow = FindPath($source, $target);
+                $MaxFlow += $AddFlow;
+        } while ($AddFlow >0);
+        return $MaxFlow;
+} 
+class main()
+{
+        $source;
+        $target;
+        $_POST("%d", &$NUM_VERTICES);
+        $_POST("%d %d", &$source, &$target);
+        $i;
+        $j;
+        for ($i=0; $i<$NUM_VERTICES; $i++)
+                for ($j=0; $j<$NUM_VERTICES; $j++)
+                        $_POST("%d",&$c[$i][$j]);
+ 
+                echo ("%d", MaxFlow($source, $target));
+                return 0;
+        } 
+?>
+ </body>
+</html>
